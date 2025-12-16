@@ -1,97 +1,63 @@
 import streamlit as st
-import json
-import hashlib
-import os
-
+import json, os, hashlib
 from gemini_client import init_gemini
 
 CACHE_FILE = "cache/cache.json"
 
-# ---------------- Cache Utilities ---------------- #
-
 def load_cache():
-    if os.path.exists(CACHE_FILE):
-        with open(CACHE_FILE, "r") as f:
-            return json.load(f)
-    return {}
+    return json.load(open(CACHE_FILE)) if os.path.exists(CACHE_FILE) else {}
 
 def save_cache(cache):
-    with open(CACHE_FILE, "w") as f:
-        json.dump(cache, f, indent=2)
+    json.dump(cache, open(CACHE_FILE, "w"), indent=2)
 
-# ---------------- App Setup ---------------- #
+def semantic_key(persona, task, constraints):
+    core = f"{persona['depth']}|{','.join(persona['focus'])}|{task}"
+    return hashlib.sha256(core.encode()).hexdigest()
 
-st.set_page_config(
-    page_title="MindForge AI",
-    layout="centered"
-)
-
+st.set_page_config(page_title="MindForge AI", layout="centered")
 st.title("🧠 MindForge AI")
-st.subheader("Persona-Driven Deep Reasoning Engine")
-
-st.write(
-    "Generate expert-level content in **one prompt** using a persistent persona powered by the **Gemini API**."
-)
-
-# ---------------- Load Personas ---------------- #
+st.caption("Controlled Reasoning • Persistent Personas • One-Call Gemini")
 
 with open("prompt_templates/personas.json") as f:
     personas = json.load(f)
 
-persona_name = st.selectbox(
-    "Choose Expert Persona",
-    list(personas.keys())
-)
+persona_name = st.selectbox("Select Expert Persona", personas.keys())
+task = st.text_area("Your Task")
+constraints = st.text_input("Constraints (optional)")
 
-task = st.text_area(
-    "Describe your task",
-    placeholder="e.g. Explain caching strategies for interviews"
-)
+if st.button("Forge Response"):
+    persona = personas[persona_name]
+    cache = load_cache()
+    key = semantic_key(persona, task, constraints)
 
-constraints = st.text_input(
-    "Optional constraints",
-    placeholder="Audience, tone, length, format, etc."
-)
-
-# ---------------- Gemini Logic ---------------- #
-
-if st.button("Generate Response"):
-    if not task.strip():
-        st.warning("Please enter a task.")
+    if key in cache:
+        st.success("Loaded from intelligent cache")
+        st.write(cache[key])
     else:
-        cache = load_cache()
-        cache_key = hashlib.md5(
-            f"{persona_name}{task}{constraints}".encode()
-        ).hexdigest()
+        model = init_gemini()
 
-        if cache_key in cache:
-            st.success("Loaded from cache")
-            st.write(cache[cache_key])
-        else:
-            try:
-                model = init_gemini()
+        prompt = f"""
+Persona Configuration:
+Tone: {persona['tone']}
+Depth: {persona['depth']}
+Focus Areas: {', '.join(persona['focus'])}
+Output Style: {persona['output_style']}
 
-                prompt = f"""
-Persona Description:
-{personas[persona_name]['description']}
-
-Task:
+User Task:
 {task}
 
 Constraints:
 {constraints}
 
-Produce a clear, final, well-structured response.
+Required Output Format:
+- Clear title
+- Structured sections
+- Actionable insights
 """
 
-                response = model.generate_content(prompt)
-                output = response.text
+        response = model.generate_content(prompt).text
+        cache[key] = response
+        save_cache(cache)
 
-                cache[cache_key] = output
-                save_cache(cache)
-
-                st.success("Generated using Gemini API")
-                st.write(output)
-
-            except Exception as e:
-                st.error(str(e))
+        st.success("Generated via Gemini reasoning engine")
+        st.write(response)
