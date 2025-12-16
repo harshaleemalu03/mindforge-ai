@@ -35,6 +35,7 @@ st.caption("Controlled Reasoning • Persistent Personas • One-Call Gemini")
 with open("prompt_templates/personas.json") as f:
     personas = json.load(f)
 
+# Sidebar: select persona
 persona_name = st.selectbox("Select Expert Persona", personas.keys())
 task = st.text_area("Your Task", placeholder="Describe what you want the AI to do...")
 constraints = st.text_input("Optional Constraints (audience, tone, format, etc.)")
@@ -71,11 +72,24 @@ Required Output Format:
 - Structured sections
 - Actionable insights
 """
-                response = model.generate_content(prompt).text
+
+                with st.spinner("Generating response via Gemini..."):
+                    response = model.generate_content(prompt).text
+
                 cache[key] = response
                 save_cache(cache)
 
                 st.success("Generated via Gemini reasoning engine")
                 st.write(response)
+
+                # Copy to clipboard button
+                st.code(response, language=None)
+                st.download_button(
+                    label="Download Output",
+                    data=response,
+                    file_name="mindforge_output.txt",
+                    mime="text/plain"
+                )
+
             except Exception as e:
                 st.error(f"Error generating response: {e}")
