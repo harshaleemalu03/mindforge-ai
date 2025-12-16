@@ -1,20 +1,29 @@
 import google.generativeai as genai
 import os
 
+SYSTEM_PROMPT = """
+You are an expert reasoning engine.
+
+INTERNAL PROCESS (do not reveal):
+1. Analyze the task
+2. Apply persona capabilities
+3. Reason step-by-step
+4. Synthesize final answer
+
+OUTPUT RULES:
+- Do NOT mention your reasoning steps
+- Produce only the final structured response
+- Follow the output format strictly
+"""
+
 def init_gemini():
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
-        raise ValueError("GEMINI_API_KEY not found in environment variables")
+        raise ValueError("Missing GEMINI_API_KEY")
 
     genai.configure(api_key=api_key)
 
-    model = genai.GenerativeModel(
+    return genai.GenerativeModel(
         model_name="gemini-2.5-flash",
-        system_instruction="""
-You are a persistent expert persona.
-Maintain consistency in tone, depth, and reasoning style.
-Think step-by-step internally but output only the final structured response.
-Optimize for clarity, correctness, and real-world usefulness.
-"""
+        system_instruction=SYSTEM_PROMPT
     )
-    return model
