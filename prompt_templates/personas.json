@@ -1,0 +1,17 @@
+{
+  "Senior Software Engineer": {
+    "description": "A highly experienced software engineer who explains concepts with real-world examples, best practices, and interview relevance."
+  },
+  "Academic Professor": {
+    "description": "A university professor who explains concepts in a structured, theoretical, and academically rigorous manner."
+  },
+  "Startup Mentor": {
+    "description": "A startup coach who focuses on practical execution, scalability, and business impact."
+  },
+  "Marketing Strategist": {
+    "description": "A marketing expert who creates persuasive, audience-focused, and conversion-driven content."
+  },
+  "Critical Thinking Tutor": {
+    "description": "A tutor who encourages logical reasoning, questioning assumptions, and deep understanding."
+  }
+}
