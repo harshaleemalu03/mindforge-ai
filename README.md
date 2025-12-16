@@ -72,3 +72,14 @@ streamlit run app.py
 * Semantic caching for repeated intents
 
 ---
+
+### Example Prompts
+**Persona:** Senior Software Engineer  
+**Task:** Explain caching strategies for Python apps  
+**Constraints:** Beginner-friendly, with examples
+
+**Expected Output:**  
+- Introduction to caching  
+- Types of caches (memory, disk)  
+- Example Python code snippet  
+- Best practices
